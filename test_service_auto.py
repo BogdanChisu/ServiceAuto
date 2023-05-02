@@ -1,83 +1,52 @@
+# from data_ex import Data
+#
+# @pytest.fixture()
+# def prepared_object():
+#     data = Data()
+#     data.prepare("John", "Smith")
+#     yield data
+#     data.prepare("John", "Smith")
+
 import pytest
 from service_auto import ServiceAuto
 from masina import Masina
 
-@pytest.fixture
-def service():
-    nume_service = "Service Auto Test"
-    adresa_service = "Calea Bucuresti 185"
-    service_test = ServiceAuto(nume_service, adresa_service)
-    yield service_test
+@pytest.fixture()
+def prep_car():
+    car1 = Masina("Stelvio", 2022, False)
+    yield car1
 
-@pytest.fixture
-def automobil():
-    model = "Stelvio"
-    an_de_fabricatie = 2022
-    status_reparatie = False
-    auto_test = Masina(model, an_de_fabricatie, status_reparatie)
-    yield auto_test
+@pytest.fixture()
+def prep_car1():
+    car2 = Masina("Giulia", 2022, False)
+    yield car2
 
-def test_creare_obiect_ServiceAuto():
-    nume_service = "Service Auto Test"
-    adresa_service = "Calea Bucuresti 185"
-    service_test = ServiceAuto(nume_service, adresa_service)
+@pytest.fixture()
+def prep_service():
+    serv1 = ServiceAuto("Service Auto Test", "Calea Dorobantilor 185")
+    yield serv1
 
-    assert service_test.nume_service == nume_service
-    assert service_test.adresa_service == adresa_service
-    assert  len(service_test.lista_masini_reparate) == 0
+def test_creation(prep_service: ServiceAuto):
+    assert prep_service.nume_service == "Service Auto Test"
 
-def test_verificare_adaugare_masina_reparata():
-    nume_service = "Service Auto Test"
-    adresa_service = "Calea Bucuresti 185"
-    service_test = ServiceAuto(nume_service, adresa_service)
-    masina_test = ("X5", 2019, False)
-    service_test.adauga_masina_reparata(masina_test)
+def test_adaugare_masina_in_lista_reparate(prep_service: ServiceAuto):
+    prep_service.adauga_masina_reparata(prep_car)
+    prep_service.adauga_masina_reparata(prep_car1)
+    assert  len(prep_service.lista_masini_reparate) == 2
 
-    assert masina_test in service_test.lista_masini_reparate
+def test_stergere_masina_din_lista_reparate(prep_service: ServiceAuto):
+    prep_service.adauga_masina_reparata(prep_car)
+    prep_service.adauga_masina_reparata(prep_car1)
+    prep_service.sterge_masina_reparata(prep_car1)
+    assert len(prep_service.lista_masini_reparate) == 1
 
-def test_verificare_sterge_masina_reparata():
-    model_masina = "Stelvio"
-    an_de_fabricatie = 2022
-    status_reparatie = False
-    masina_test = Masina(model_masina, an_de_fabricatie, status_reparatie)
+def test_marcheaza_masina_ca_fiind_reparata(prep_car: Masina):
+    assert prep_car.status_reparatie == False
+    prep_car.marcheaza_masina_ca_fiind_reparata()
+    assert prep_car.status_reparatie == True
 
-    nume_service = "Service Auto Test"
-    adresa_service = "Calea Bucuresti 185"
-    service_test = ServiceAuto(nume_service, adresa_service)
-    service_test.adauga_masina_reparata(masina_test)
-    service_test.sterge_masina_reparata(masina_test)
-
-    assert masina_test not in service_test.lista_masini_reparate
-
-def test_repara_masina():
-    model_masina = "Stelvio"
-    an_de_fabricatie = 2022
-    status_reparatie = False
-    masina_test = Masina(model_masina, an_de_fabricatie, status_reparatie)
-
-    nume_service = "Service Auto Test"
-    adresa_service = "Calea Bucuresti 185"
-    service_test = ServiceAuto(nume_service, adresa_service)
-
-    service_test.repara_masina(masina_test)
-    assert masina_test.status_reparatie == True
-
-# def test_verifica_masini_in_reparatiew():
-#     model_masina = "Stelvio"
-#     an_de_fabricatie = 2022
-#     status_reparatie = False
-#     masina_test1 = Masina(model_masina, an_de_fabricatie, status_reparatie)
-#
-#     model_masina = "Tonale"
-#     an_de_fabricatie = 2022
-#     status_reparatie = False
-#     masina_test2 = Masina(model_masina, an_de_fabricatie, status_reparatie)
-#
-#     nume_service = "Service Auto Test"
-#     adresa_service = "Calea Bucuresti 185"
-#     service_test = ServiceAuto(nume_service, adresa_service)
-#
-#     service_test.adauga_masina_reparata(masina_test1)
-#     service_test.adauga_masina_reparata(masina_test2)
-#
-#     assert len(service_test.lista_masini_reparate)
+def test_adauga_in_lista_de_masina_in_curs_de_reparatie(prep_service: ServiceAuto):
+    assert len(prep_service.lista_masini_in_reparatie) == 0
+    prep_service.adauga_in_lista_de_masina_in_curs_de_reparatie(prep_car)
+    prep_service.adauga_in_lista_de_masina_in_curs_de_reparatie(prep_car1)
+    assert len(prep_service.lista_masini_in_reparatie) == 2
